@@ -6,6 +6,7 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
+import { setDoc, doc, serverTimestamp, FieldValue } from "firebase/firestore";
 import { db } from "../config/firebase.config";
 
 import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
@@ -16,6 +17,7 @@ type FormData = {
   email: string;
   password: string;
 };
+type ServerFormData = Omit<FormData, "password"> & { timestamp: FieldValue };
 
 export function SignUp() {
   const navigate = useNavigate();
@@ -37,9 +39,7 @@ export function SignUp() {
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     try {
-      console.log(db);
       const auth = getAuth();
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -50,6 +50,12 @@ export function SignUp() {
       updateProfile(auth.currentUser!, {
         displayName: name,
       });
+      const formDataCopy: ServerFormData = {
+        name: formData.name,
+        email: formData.email,
+        timestamp: serverTimestamp(),
+      };
+      await setDoc(doc(db, "users", user.uid), formDataCopy);
       navigate("/");
     } catch (error) {
       console.log(error);
