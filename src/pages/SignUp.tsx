@@ -1,7 +1,14 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
 
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { db } from "../config/firebase.config";
+
+import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
 import visibilityIcon from "../assets/svg/visibilityIcon.svg";
 
 type FormData = {
@@ -11,7 +18,6 @@ type FormData = {
 };
 
 export function SignUp() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -29,6 +35,27 @@ export function SignUp() {
     }));
   };
 
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      console.log(db);
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      const user = userCredential.user;
+      updateProfile(auth.currentUser!, {
+        displayName: name,
+      });
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="pageContainer">
       <header>
@@ -36,7 +63,7 @@ export function SignUp() {
       </header>
 
       <main>
-        <form>
+        <form onSubmit={onSubmit}>
           <input
             type="text"
             className="nameInput"
@@ -78,7 +105,7 @@ export function SignUp() {
 
           <div className="signUpBar">
             <p className="signUpText">Sign Up</p>
-            <button type="button" className="signUpButton">
+            <button type="submit" className="signUpButton">
               <ArrowRightIcon fill="#fff" width="34px" height="34px" />
             </button>
           </div>
