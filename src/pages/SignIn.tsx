@@ -1,7 +1,9 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
 
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+
+import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
 import visibilityIcon from "../assets/svg/visibilityIcon.svg";
 
 type FormData = {
@@ -10,7 +12,6 @@ type FormData = {
 };
 
 export function SignIn() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -27,6 +28,23 @@ export function SignIn() {
     }));
   };
 
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      const userCredentials = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      if (userCredentials.user) {
+        navigate("/");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="pageContainer">
       <header>
@@ -34,7 +52,7 @@ export function SignIn() {
       </header>
 
       <main>
-        <form>
+        <form onSubmit={onSubmit}>
           <input
             type="email"
             className="emailInput"
@@ -68,7 +86,7 @@ export function SignIn() {
 
           <div className="signInBar">
             <p className="signInText">Sign In</p>
-            <button type="button" className="signInButton">
+            <button type="submit" className="signInButton">
               <ArrowRightIcon fill="#fff" width="34px" height="34px" />
             </button>
           </div>
